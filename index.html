@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Summarizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+
+        .file-upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f9f9f9;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #999;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
+            display: none;
+            background: #f0f4ff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-info.active {
+            display: flex;
+        }
+
+        .file-icon {
+            font-size: 40px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .remove-file {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-file:hover {
+            background: #ff3838;
+            transform: scale(1.05);
+        }
+
+        .options-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .option-group {
+            margin-bottom: 15px;
+        }
+
+        .option-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 8px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .range-value {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .summarize-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .summarize-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .summarize-btn:active {
+            transform: translateY(0);
+        }
+
+        .summarize-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-section {
+            display: none;
+        }
+
+        .output-section.active {
+            display: block;
+        }
+
+        .summary-container {
+            background: #f0f4ff;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .summary-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn.copied {
+            background: #2ecc71;
+        }
+
+        .download-btn {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .clear-btn {
+            background: #ff4757;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            display: none;
+            background: #ff4757;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 AI Text Summarizer</h1>
+            <div class="subtitle">Instantly summarize long texts and PDF documents</div>
+        </header>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" data-tab="text">✍️ Text Input</button>
+                <button class="tab" data-tab="pdf">📄 PDF Upload</button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Text Input Tab -->
+            <div class="tab-content active" id="textTab">
+                <div class="input-section">
+                    <div class="section-title">
+                        <span>Enter Your Text</span>
+                    </div>
+                    <textarea id="textInput" placeholder="Paste your text here... (minimum 100 characters)"></textarea>
+                    <div class="char-count" id="charCount">0 characters</div>
+                </div>
+            </div>
+
+            <!-- PDF Upload Tab -->
+            <div class="tab-content" id="pdfTab">
+                <div class="input-section">
+                    <div class="section-title">
+                        <span>Upload PDF Document</span>
+                    </div>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">Click to upload or drag and drop</div>
+                        <div class="upload-subtext">PDF files only (Max 10MB)</div>
+                        <input type="file" id="pdfInput" accept=".pdf">
+                    </div>
+                    <div class="file-info" id="fileInfo">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <div class="file-name" id="fileName"></div>
+                            <div class="file-size" id="fileSize"></div>
+                        </div>
+                        <button class="remove-file" id="removeFile">Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summarization Options -->
+            <div class="options-section">
+                <div class="section-title">⚙️ Summarization Options</div>
+                
+                <div class="option-group">
+                    <label for="summaryLength">Summary Length: <span class="range-value" id="lengthValue">30%</span></label>
+                    <input type="range" id="summaryLength" min="10" max="50" value="30" step="5">
+                </div>
+
+                <div class="option-group">
+                    <label for="summaryType">Summary Type:</label>
+                    <select id="summaryType">
+                        <option value="extractive">Extractive (Key sentences)</option>
+                        <option value="abstractive">Abstractive (Paraphrased)</option>
+                        <option value="bullets">Bullet Points</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="summarize-btn" id="summarizeBtn">🚀 Generate Summary</button>
+
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Analyzing and summarizing your text...</div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section" id="outputSection">
+                <div class="section-title">📊 Summary Statistics</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="originalWords">0</div>
+                        <div class="stat-label">Original Words</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="summaryWords">0</div>
+                        <div class="stat-label">Summary Words</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="compressionRatio">0%</div>
+                        <div class="stat-label">Compression</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="readingTime">0</div>
+                        <div class="stat-label">Reading Time (min)</div>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 30px;">📄 Generated Summary</div>
+                <div class="summary-container">
+                    <div class="summary-text" id="summaryText"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn copy-btn" id="copyBtn">
+                        <span>📋</span> Copy Summary
+                    </button>
+                    <button class="action-btn download-btn" id="downloadBtn">
+                        <span>💾</span> Download as TXT
+                    </button>
+                    <button class="action-btn clear-btn" id="clearBtn">
+                        <span>🗑️</span> Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF.js library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <script>
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Get elements
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const textInput = document.getElementById('textInput');
+        const pdfInput = document.getElementById('pdfInput');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFileBtn = document.getElementById('removeFile');
+        const summaryLength = document.getElementById('summaryLength');
+        const lengthValue = document.getElementById('lengthValue');
+        const summaryType = document.getElementById('summaryType');
+        const summarizeBtn = document.getElementById('summarizeBtn');
+        const loading = document.getElementById('loading');
+        const outputSection = document.getElementById('outputSection');
+        const summaryText = document.getElementById('summaryText');
+        const charCount = document.getElementById('charCount');
+        const errorMessage = document.getElementById('errorMessage');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        let currentText = '';
+        let currentFile = null;
+        let activeTab = 'text';
+
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                document.getElementById(`${tabName}Tab`).classList.add('active');
+                activeTab = tabName;
+                hideError();
+            });
+        });
+
+        // Character count
+        textInput.addEventListener('input', () => {
+            const length = textInput.value.length;
+            charCount.textContent = `${length} characters`;
+        });
+
+        // Summary length slider
+        summaryLength.addEventListener('input', (e) => {
+            lengthValue.textContent = `${e.target.value}%`;
+        });
+
+        // File upload handling
+        fileUploadArea.addEventListener('click', () => {
+            pdfInput.click();
+        });
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        pdfInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        removeFileBtn.addEventListener('click', () => {
+            currentFile = null;
+            pdfInput.value = '';
+            fileInfo.classList.remove('active');
+            hideError();
+        });
+
+        // Handle file upload
+        function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                showError('Please upload a PDF file only.');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB.');
+                return;
+            }
+
+            currentFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.add('active');
+            hideError();
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        // Extract text from PDF
+        async function extractTextFromPDF(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                let fullText = '';
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n\n';
+                }
+
+                return fullText.trim();
+            } catch (error) {
+                throw new Error('Failed to extract text from PDF. Please ensure it\'s a valid PDF file.');
+            }
+        }
+
+        // Summarize button click
+        summarizeBtn.addEventListener('click', async () => {
+            hideError();
+            
+            try {
+                // Get input text
+                if (activeTab === 'text') {
+                    currentText = textInput.value.trim();
+                    
+                    if (currentText.length < 100) {
+                        showError('Please enter at least 100 characters of text.');
+                        return;
+                    }
+                } else {
+                    if (!currentFile) {
+                        showError('Please upload a PDF file.');
+                        return;
+                    }
+                    
+                    loading.classList.add('active');
+                    summarizeBtn.disabled = true;
+                    
+                    currentText = await extractTextFromPDF(currentFile);
+                    
+                    if (currentText.length < 100) {
+                        loading.classList.remove('active');
+                        summarizeBtn.disabled = false;
+                        showError('The PDF does not contain enough text to summarize.');
+                        return;
+                    }
+                }
+
+                // Show loading
+                loading.classList.add('active');
+                outputSection.classList.remove('active');
+                summarizeBtn.disabled = true;
+
+                // Simulate processing time
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Generate summary
+                const summary = generateSummary(currentText);
+                
+                // Display results
+                displaySummary(summary);
+                
+                // Hide loading, show output
+                loading.classList.remove('active');
+                outputSection.classList.add('active');
+                summarizeBtn.disabled = false;
+
+                // Scroll to output
+                outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (error) {
+                loading.classList.remove('active');
+                summarizeBtn.disabled = false;
+                showError(error.message);
+            }
+        });
+
+        // Generate summary (extractive algorithm)
+        function generateSummary(text) {
+            const type = summaryType.value;
+            const lengthPercent = parseInt(summaryLength.value);
+            
+            // Split into sentences
+            const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
+            const numSentences = Math.max(1, Math.ceil(sentences.length * lengthPercent / 100));
+
+            if (type === 'bullets') {
+                return generateBulletPoints(sentences, numSentences);
+            } else if (type === 'abstractive') {
+                return generateAbstractiveSummary(sentences, numSentences);
+            } else {
+                return generateExtractiveSummary(sentences, numSentences);
+            }
+        }
+
+        // Extractive summary - select most important sentences
+        function generateExtractiveSummary(sentences, numSentences) {
+            // Score sentences based on word frequency
+            const words = sentences.join(' ').toLowerCase().split(/\s+/);
+            const wordFreq = {};
+            
+            words.forEach(word => {
+                if (word.length > 3) {
+                    wordFreq[word] = (wordFreq[word] || 0) + 1;
+                }
+            });
+
+            // Score each sentence
+            const scoredSentences = sentences.map((sentence, index) => {
+                const sentenceWords = sentence.toLowerCase().split(/\s+/);
+                let score = 0;
+                
+                sentenceWords.forEach(word => {
+                    score += wordFreq[word] || 0;
+                });
+                
+                // Boost score for first and last sentences
+                if (index === 0) score *= 1.5;
+                if (index === sentences.length - 1) score *= 1.3;
+                
+                return { sentence, score, index };
+            });
+
+            // Sort by score and take top sentences
+            scoredSentences.sort((a, b) => b.score - a.score);
+            const topSentences = scoredSentences.slice(0, numSentences);
+            
+            // Sort by original order
+            topSentences.sort((a, b) => a.index - b.index);
+            
+            return topSentences.map(s => s.sentence).join(' ');
+        }
+
+        // Abstractive summary - paraphrase key points
+        function generateAbstractiveSummary(sentences, numSentences) {
+            const summary = generateExtractiveSummary(sentences, numSentences);
+            
+            // Simple paraphrasing by restructuring
+            const paraphrased = summary
+                .replace(/\b(is|are|was|were)\b/g, 'represents')
+                .replace(/\b(has|have|had)\b/g, 'contains')
+                .replace(/\b(will|shall)\b/g, 'is expected to')
+                .replace(/\b(can|could)\b/g, 'is able to')
+                .replace(/\b(may|might)\b/g, 'possibly');
+            
+            return paraphrased;
+        }
+
+        // Generate bullet points
+        function generateBulletPoints(sentences, numSentences) {
+            const extractive = generateExtractiveSummary(sentences, numSentences);
+            const points = extractive.match(/[^\.!\?]+[\.!\?]+/g) || [extractive];
+            
+            return points.map(point => '• ' + point.trim()).join('\n\n');
+        }
+
+        // Display summary
+        function displaySummary(summary) {
+            summaryText.textContent = summary;
+
+            // Calculate statistics
+            const originalWords = currentText.split(/\s+/).length;
+            const summaryWordsCount = summary.split(/\s+/).length;
+            const compression = Math.round((1 - summaryWordsCount / originalWords) * 100);
+            const readingTime = Math.ceil(summaryWordsCount / 200); // Average reading speed
+
+            document.getElementById('originalWords').textContent = originalWords.toLocaleString();
+            document.getElementById('summaryWords').textContent = summaryWordsCount.toLocaleString();
+            document.getElementById('compressionRatio').textContent = compression + '%';
+            document.getElementById('readingTime').textContent = readingTime;
+        }
+
+        // Copy summary
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(summaryText.textContent);
+                
+                copyBtn.innerHTML = '<span>✓</span> Copied!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<span>📋</span> Copy Summary';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (error) {
+                showError('Failed to copy to clipboard.');
+            }
+        });
+
+        // Download summary
+        downloadBtn.addEventListener('click', () => {
+            const text = summaryText.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'summary_' + new Date().getTime() + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Clear all
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear everything?')) {
+                textInput.value = '';
+                currentText = '';
+                currentFile = null;
+                pdfInput.value = '';
+                fileInfo.classList.remove('active');
+                outputSection.classList.remove('active');
+                charCount.textContent = '0 characters';
+                hideError();
+            }
+        });
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+            
+            setTimeout(() => {
+                hideError();
+            }, 5000);
+        }
+
+        // Hide error message
+        function hideError() {
+            errorMessage.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
